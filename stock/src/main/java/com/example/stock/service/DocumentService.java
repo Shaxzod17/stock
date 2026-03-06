@@ -1,6 +1,7 @@
 package com.example.stock.service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,14 @@ public class DocumentService {
     private final ProductRepository productRepository;
     private final StockQuantityRepository stockQuantityRepository;
 
+    public List<Document> getAll() {
+        return documentRepository.findAll();
+    }
+
+    public List<DocumentItem> getItems(Long documentId) {
+        return itemRepository.findByDocumentId(documentId);
+    }
+
     @Transactional
     public void create(DocumentRequest request) {
 
@@ -38,7 +47,7 @@ public class DocumentService {
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
 
         Document document = new Document();
-        document.setDate(LocalDate.now());
+        document.setDate(request.getDate() != null ? request.getDate() : LocalDate.now());
         document.setType(request.getType());
         document.setStock(stock);
 

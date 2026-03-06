@@ -1,9 +1,10 @@
 package com.example.stock.config;
 
 import org.springframework.security.config.Customizer;
-
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.*;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -39,18 +40,30 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-        @Bean
-        SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.POST, "/api/products").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/documents").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/stocks").permitAll()
-                .anyRequest().authenticated()
-            )
-            .formLogin(Customizer.withDefaults());
-
-        return http.build();
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
+
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .cors(Customizer.withDefaults())
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+            .requestMatchers(HttpMethod.GET,  "/api/products").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/products").permitAll()
+            .requestMatchers(HttpMethod.GET,  "/api/documents").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/documents").permitAll()
+            .requestMatchers(HttpMethod.GET,  "/api/stocks").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/stocks").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/documents/{id}/items").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/reports").permitAll()
+            .anyRequest().authenticated()
+        )
+        .formLogin(Customizer.withDefaults());
+
+    return http.build();
+}
 }

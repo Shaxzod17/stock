@@ -23,14 +23,14 @@ public class ReportService {
                 p.name,
                 p.code,
                 p.meterKvadrat,
-                SUM(CASE WHEN d.type = 'IN' THEN di.quantity ELSE 0 END),
-                SUM(CASE WHEN d.type = 'OUT' THEN di.quantity ELSE 0 END)
+                SUM(CASE WHEN d.type = com.example.stock.entity.DocumentType.IN THEN di.quantity ELSE 0 END),
+                SUM(CASE WHEN d.type = com.example.stock.entity.DocumentType.OUT THEN di.quantity ELSE 0 END)
             )
             FROM DocumentItem di
             JOIN di.document d
             JOIN di.product p
             WHERE d.date BETWEEN :start AND :end
-            GROUP BY p.id
+            GROUP BY p.id, p.name, p.code, p.meterKvadrat
         """;
 
         return entityManager.createQuery(jpql, ReportDto.class)
