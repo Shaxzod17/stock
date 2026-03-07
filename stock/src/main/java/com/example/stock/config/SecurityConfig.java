@@ -60,6 +60,11 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/stocks").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/documents/{id}/items").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/reports").permitAll()
+            .requestMatchers(HttpMethod.GET,  "/api/debts").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/debts").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/debts/*/payments").permitAll()
+            .requestMatchers(HttpMethod.PUT,    "/api/stocks/**").permitAll()
+            .requestMatchers(HttpMethod.DELETE, "/api/stocks/**").permitAll()
             .anyRequest().authenticated()
         )
         .formLogin(Customizer.withDefaults());
