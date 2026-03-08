@@ -16,7 +16,7 @@ public class ReportService {
 
     private final EntityManager entityManager;
 
-    public List<ReportDto> getReport(LocalDate start, LocalDate end) {
+    public List<ReportDto> getReport(LocalDate start, LocalDate end, Long stockId) {
 
         String jpql = """
             SELECT new com.example.stock.dto.ReportDto(
@@ -30,12 +30,14 @@ public class ReportService {
             JOIN di.document d
             JOIN di.product p
             WHERE d.date BETWEEN :start AND :end
+            AND (:stockId IS NULL OR d.stock.id = :stockId)
             GROUP BY p.id, p.name, p.code, p.meterKvadrat
         """;
 
         return entityManager.createQuery(jpql, ReportDto.class)
                 .setParameter("start", start)
                 .setParameter("end", end)
+                .setParameter("stockId", stockId)
                 .getResultList();
     }
 }

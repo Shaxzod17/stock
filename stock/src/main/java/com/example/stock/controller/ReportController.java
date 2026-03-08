@@ -19,8 +19,9 @@ public class ReportController {
     @GetMapping
     public List<ReportDto> report(
             @RequestParam LocalDate start,
-            @RequestParam LocalDate end) {
+            @RequestParam LocalDate end,
+            @RequestParam(required = false) Long stockId) {
 
-        return service.getReport(start, end);
+        return service.getReport(start, end, stockId);
     }
 }
