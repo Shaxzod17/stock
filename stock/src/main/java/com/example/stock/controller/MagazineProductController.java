@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.stock.dto.ChiqimRequest;
+import com.example.stock.dto.KirimRequest;
 import com.example.stock.dto.MagazineRequest;
 import com.example.stock.dto.MagazineResponse;
 import com.example.stock.entity.MagazineChiqimTarix;
@@ -39,12 +40,10 @@ public class MagazineProductController {
                     dto.setCode(product.getCode());
                     dto.setName(product.getName());
                     dto.setMeterKvadrat(product.getMeterKvadrat());
-
                     Double quantity = tavarQuantityRepository
                             .findByProductId(product.getId())
                             .map(MagazineTavarQuantity::getQuantity)
                             .orElse(0.0);
-
                     dto.setQuantity(quantity);
                     return dto;
                 })
@@ -53,58 +52,62 @@ public class MagazineProductController {
 
     @PostMapping
     public ResponseEntity<MagazineResponse> addProduct(@RequestBody MagazineRequest request) {
-
-        Optional<MagazineProduct> existing = productRepository.findByCode(request.getCode());
-        if (existing.isPresent()) {
-            MagazineProduct product = existing.get();
-            MagazineTavarQuantity qty = tavarQuantityRepository
-                    .findByProductId(product.getId())
-                    .orElse(new MagazineTavarQuantity());
-
-            qty.setProduct(product);
-            qty.setQuantity((qty.getQuantity() == null ? 0.0 : qty.getQuantity()) + request.getQuantity());
-            tavarQuantityRepository.save(qty);
-
-            MagazineResponse dto = new MagazineResponse();
-            dto.setId(product.getId());
-            dto.setCode(product.getCode());
-            dto.setName(product.getName());
-            dto.setMeterKvadrat(product.getMeterKvadrat());
-            dto.setQuantity(qty.getQuantity());
-            return ResponseEntity.ok(dto);
+        if (productRepository.findByCode(request.getCode()).isPresent()) {
+            return ResponseEntity.badRequest().build();
         }
 
         MagazineProduct product = new MagazineProduct();
         product.setCode(request.getCode());
         product.setName(request.getName());
         product.setMeterKvadrat(request.getMeterKvadrat());
-        MagazineProduct saved = productRepository.save(product);
+        product = productRepository.save(product);
 
-        MagazineTavarQuantity tavarQty = new MagazineTavarQuantity();
-        tavarQty.setProduct(saved);
-        tavarQty.setQuantity(request.getQuantity());
-        tavarQuantityRepository.save(tavarQty);
+        MagazineTavarQuantity qty = new MagazineTavarQuantity();
+        qty.setProduct(product);
+        qty.setQuantity(0.0);
+        tavarQuantityRepository.save(qty);
 
         MagazineResponse dto = new MagazineResponse();
-        dto.setId(saved.getId());
-        dto.setCode(saved.getCode());
-        dto.setName(saved.getName());
-        dto.setMeterKvadrat(saved.getMeterKvadrat());
-        dto.setQuantity(request.getQuantity());
+        dto.setId(product.getId());
+        dto.setCode(product.getCode());
+        dto.setName(product.getName());
+        dto.setMeterKvadrat(product.getMeterKvadrat());
+        dto.setQuantity(0.0);
+        return ResponseEntity.ok(dto);
+    }
 
+    @PostMapping("/kirim")
+    public ResponseEntity<?> kirim(@RequestBody KirimRequest request) {
+        Optional<MagazineProduct> productOpt = productRepository.findByCode(request.getCode());
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Bunday kodli tavar yo'q");
+        }
+
+        MagazineProduct product = productOpt.get();
+        MagazineTavarQuantity qty = tavarQuantityRepository
+                .findByProductId(product.getId())
+                .orElse(new MagazineTavarQuantity());
+        qty.setProduct(product);
+        qty.setQuantity((qty.getQuantity() == null ? 0.0 : qty.getQuantity()) + request.getQuantity());
+        tavarQuantityRepository.save(qty);
+
+        MagazineResponse dto = new MagazineResponse();
+        dto.setId(product.getId());
+        dto.setCode(product.getCode());
+        dto.setName(product.getName());
+        dto.setMeterKvadrat(product.getMeterKvadrat());
+        dto.setQuantity(qty.getQuantity());
         return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/chiqim")
     public ResponseEntity<?> chiqim(@RequestBody ChiqimRequest request) {
         Optional<MagazineProduct> productOpt = productRepository.findByCode(request.getCode());
-
         if (productOpt.isEmpty()) {
             return ResponseEntity.badRequest().body("Bunday kodli tavar yo'q");
         }
 
         MagazineProduct product = productOpt.get();
-
         MagazineTavarQuantity qty = tavarQuantityRepository
                 .findByProductId(product.getId())
                 .orElseThrow(() -> new RuntimeException("Qoldiq topilmadi"));
@@ -116,7 +119,6 @@ public class MagazineProductController {
         qty.setQuantity(qty.getQuantity() - request.getAmount());
         tavarQuantityRepository.save(qty);
 
-        // Tarixga yoz
         MagazineChiqimTarix tarix = new MagazineChiqimTarix();
         tarix.setProductCode(product.getCode());
         tarix.setProductName(product.getName());
@@ -130,7 +132,6 @@ public class MagazineProductController {
         dto.setName(product.getName());
         dto.setMeterKvadrat(product.getMeterKvadrat());
         dto.setQuantity(qty.getQuantity());
-
         return ResponseEntity.ok(dto);
     }
 }

@@ -7,5 +7,4 @@ public class MagazineRequest {
     private String code;
     private String name;
     private Double meterKvadrat;
-    private Double quantity;
 }
