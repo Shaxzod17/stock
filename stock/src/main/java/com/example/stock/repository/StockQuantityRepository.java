@@ -15,4 +15,5 @@ public interface StockQuantityRepository
     Optional<StockQuantity> findByStockAndProduct(Stock stock, Product product);
 
     List<StockQuantity> findByStockId(Long stockId);
+    void deleteByProduct(Product product);
 }

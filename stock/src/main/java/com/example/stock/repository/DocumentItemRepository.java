@@ -8,4 +8,5 @@ import com.example.stock.entity.Product;
 public interface DocumentItemRepository extends JpaRepository<DocumentItem, Long> {
     List<DocumentItem> findByProduct(Product product);
     List<DocumentItem> findByDocumentId(Long documentId);
+    void deleteByProduct(Product product);
 }

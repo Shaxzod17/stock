@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.stock.dto.MagazineChiqimTarixResponse;
-import com.example.stock.entity.MagazineChiqimTarix;
 import com.example.stock.repository.MagazineChiqimTarixRepository;
 
 import lombok.RequiredArgsConstructor;
